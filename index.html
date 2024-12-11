@@ -7,7 +7,6 @@
     <style>
       * {
         box-sizing: border-box;
-        touch-action: none; /* Disable browser touch handling */
       }
       body {
         font-family: Arial, sans-serif;
@@ -52,6 +51,7 @@
         align-items: center;
         user-select: none;
         position: relative;
+        touch-action: none; /* Disable browser touch handling */
       }
       .dragging {
         opacity: 0.5;
@@ -130,7 +130,6 @@
 
       function drag(e) {
         if (!draggedElement) return;
-
         e.preventDefault();
 
         // Get current Y position
@@ -171,7 +170,6 @@
 
       function endDrag(e) {
         if (!draggedElement) return;
-
         draggedElement.classList.remove("dragging");
         draggedElement = null;
       }
