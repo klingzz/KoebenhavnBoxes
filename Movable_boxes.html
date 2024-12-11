@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mobile-Friendly Draggable Boxes</title>
+    <style>
+      * {
+        box-sizing: border-box;
+        touch-action: none; /* Disable browser touch handling */
+      }
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        background-color: #f0f0f0;
+        padding: 20px;
+      }
+      .container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 30px;
+        max-width: 800px;
+        width: 100%;
+      }
+      .column {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+        max-width: 300px;
+      }
+      .immovable-boxes .box {
+        background-color: #e0e0e0;
+        border: 2px solid #999;
+        cursor: not-allowed;
+      }
+      .movable-boxes .box {
+        background-color: #e6f2ff;
+        border: 2px solid #3b82f6;
+        cursor: move;
+      }
+      .box {
+        width: 100%;
+        height: 100px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        user-select: none;
+        position: relative;
+      }
+      .dragging {
+        opacity: 0.5;
+      }
+      h2 {
+        text-align: center;
+        margin-bottom: 10px;
+      }
+      @media (max-width: 600px) {
+        .container {
+          flex-direction: column;
+          align-items: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="column immovable-boxes">
+        <h2>Immovable Boxes</h2>
+        <div class="box">I1</div>
+        <div class="box">I2</div>
+        <div class="box">I3</div>
+        <div class="box">I4</div>
+        <div class="box">I5</div>
+        <div class="box">I6</div>
+        <div class="box">I7</div>
+        <div class="box">I8</div>
+      </div>
+      <div class="column movable-boxes">
+        <h2>Movable Boxes</h2>
+        <div class="box">M1</div>
+        <div class="box">M2</div>
+        <div class="box">M3</div>
+        <div class="box">M4</div>
+        <div class="box">M5</div>
+        <div class="box">M6</div>
+        <div class="box">M7</div>
+        <div class="box">M8</div>
+      </div>
+    </div>
+
+    <script>
+      const movableBoxes = document.querySelectorAll(".movable-boxes .box");
+      const movableBoxesContainer = document.querySelector(".movable-boxes");
+
+      let draggedElement = null;
+      let initialY = 0;
+
+      // Touch and mouse event listeners
+      movableBoxes.forEach((box) => {
+        box.addEventListener("touchstart", startDrag, { passive: false });
+        box.addEventListener("touchmove", drag, { passive: false });
+        box.addEventListener("touchend", endDrag, { passive: false });
+
+        box.addEventListener("mousedown", startDrag);
+        document.addEventListener("mousemove", drag);
+        document.addEventListener("mouseup", endDrag);
+      });
+
+      function startDrag(e) {
+        // Prevent default to stop scrolling
+        e.preventDefault();
+
+        // Handle both touch and mouse events
+        draggedElement = e.target.closest(".box");
+        draggedElement.classList.add("dragging");
+
+        // Get initial position (different for touch and mouse)
+        if (e.type === "touchstart") {
+          initialY = e.touches[0].clientY;
+        } else {
+          initialY = e.clientY;
+        }
+      }
+
+      function drag(e) {
+        if (!draggedElement) return;
+
+        e.preventDefault();
+
+        // Get current Y position
+        let currentY;
+        if (e.type === "touchmove") {
+          currentY = e.touches[0].clientY;
+        } else {
+          currentY = e.clientY;
+        }
+
+        // Calculate movement
+        const deltaY = currentY - initialY;
+
+        // Find target box
+        const boxes = Array.from(movableBoxes);
+        const currentIndex = boxes.indexOf(draggedElement);
+        const targetIndex = boxes.findIndex((box) => {
+          const rect = box.getBoundingClientRect();
+          return currentY >= rect.top && currentY <= rect.bottom;
+        });
+
+        // Swap if different index
+        if (targetIndex !== -1 && targetIndex !== currentIndex) {
+          if (targetIndex > currentIndex) {
+            movableBoxesContainer.insertBefore(
+              draggedElement,
+              boxes[targetIndex].nextSibling
+            );
+          } else {
+            movableBoxesContainer.insertBefore(
+              draggedElement,
+              boxes[targetIndex]
+            );
+          }
+          initialY = currentY;
+        }
+      }
+
+      function endDrag(e) {
+        if (!draggedElement) return;
+
+        draggedElement.classList.remove("dragging");
+        draggedElement = null;
+      }
+    </script>
+  </body>
+</html>
